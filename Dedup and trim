@@ -1,1 +1,56 @@
+#####Trimming, deduplicating, and quality filtering fastq files
+
+#Upload script
+trim_mdRAD_2frags.pl
+
+#get permission for scripts
+chmod 777 trim_mdRAD_2frags.pl
+
+# gunzip all fastq
+
+trim_mdRAD_2frags.pl input=illUN-1-23_S1_L001_R1_001.fastq sampleID=3
+trim_mdRAD_2frags.pl input=illUN-1-23_S1_L002_R1_001.fastq sampleID=3
+
+trim_mdRAD_2frags.pl input=illUN-1-24_S2_L001_R1_001.fastq sampleID=3
+trim_mdRAD_2frags.pl input=illUN-1-24_S2_L002_R1_001.fastq sampleID=3
+
+trim_mdRAD_2frags.pl input=illUN-1-25_S3_L001_R1_001.fastq sampleID=3
+trim_mdRAD_2frags.pl input=illUN-1-25_S3_L002_R1_001.fastq sampleID=3
+
+
+trim_mdRAD_2frags.pl input= sampleID=3
+trim_mdRAD_2frags.pl input= sampleID=3
+
+
+#trim_mdRAD_2frags.pl fastq > trimsMd
+
+#open the “trimsMd” file
+geany trimsMd
+
+#add the following to make into a qsub, "trims.qsub" for job submission
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd # start job in submission directory
+#$ -N trimsMd # job name, anything you want
+#$ -l h_rt=24:00:00
+#$ -M kscavo@bu.edu #your email notification
+#$ -m be
+
+#submit qsub
+qsub trimsMd.qsub
+
+# for reference-based analysis: trimming poor quality bases off ends:
+>trimse2
+for file in *.tr0; do echo "cutadapt -q 15,15 -m 25 -o ${file/.tr0/}.trim $file > ${file}_trimlog.txt" >> trimse2; done
+         #this creates a file called trimse-open up the file to see all the commands to use cutadapt for each file.
+
+# execute all commands in trimse file (serial or parallel using Launcher, if your system allows) 
+
+#once the job is finished, merge together all log files created from trimming so that they are easier to look at
+cat *.txt > Merged_trimlog_files.txt 
+
+#all trimmed files have ending, .trim
+
+#check to see of you have the right amount of trim files (should match the number of .tr0 files)
+ls -l *.trim | wc -l
 
