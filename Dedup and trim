@@ -8,11 +8,11 @@ chmod 777 trim_mdRAD_2frags.pl
 
 # gunzip all fastq
 
-trim_mdRAD_2frags.pl input=illUN-1-23_S1_L001_R1_001.fastq minBCcount=5000 sampleID=3
-trim_mdRAD_2frags.pl input=illUN-1-23_S1_L002_R1_001.fastq sampleID=3
+trim_mdRAD.pl input=illUN-1-23_S1_L001_R1_001.fastq sampleID=3
+trim_mdRAD.pl input=illUN-1-23_S1_L002_R1_001.fastq sampleID=3
 
 trim_mdRAD_2frags.pl input=illUN-1-24_S2_L001_R1_001.fastq sampleID=3
-trim_mdRAD_2frags.pl input=illUN-1-24_S2_L002_R1_001.fastq sampleID=3
+trim_mdRAD.pl input=illUN-1-24_S2_L002_R1_001.fastq sampleID=3
 
 trim_mdRAD_2frags.pl input=illUN-1-25_S3_L001_R1_001.fastq sampleID=3
 trim_mdRAD_2frags.pl input=illUN-1-25_S3_L002_R1_001.fastq sampleID=3
