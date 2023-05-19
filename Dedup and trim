@@ -7,37 +7,15 @@ trim_mdRAD_2frags.pl
 chmod 777 trim_mdRAD_2frags.pl
 
 # gunzip all fastq
+# trim_mdRAD.pl all fastq (demultiplex)
 
-trim_mdRAD.pl input=illUN-1-23_S1_L001_R1_001.fastq sampleID=3
-trim_mdRAD.pl input=illUN-1-23_S1_L002_R1_001.fastq sampleID=3
+# example
+gunzip illUN-4-51_S28_L001_R1_001.fastq.gz
+gunzip illUN-4-51_S28_L002_R1_001.fastq.gz
 
-trim_mdRAD_2frags.pl input=illUN-1-24_S2_L001_R1_001.fastq sampleID=3
-trim_mdRAD.pl input=illUN-1-24_S2_L002_R1_001.fastq sampleID=3
+trim_mdRAD.pl input=illUN-4-51_S28_L001_R1_001.fastq sampleID=3
+trim_mdRAD.pl input=illUN-4-51_S28_L002_R1_001.fastq sampleID=3
 
-trim_mdRAD_2frags.pl input=illUN-1-25_S3_L001_R1_001.fastq sampleID=3
-trim_mdRAD_2frags.pl input=illUN-1-25_S3_L002_R1_001.fastq sampleID=3
-
-
-trim_mdRAD_2frags.pl input= sampleID=3
-trim_mdRAD_2frags.pl input= sampleID=3
-
-
-#trim_mdRAD_2frags.pl fastq > trimsMd
-
-#open the “trimsMd” file
-geany trimsMd
-
-#add the following to make into a qsub, "trims.qsub" for job submission
-#!/bin/bash -l
-#$ -V # inherit the submission environment
-#$ -cwd # start job in submission directory
-#$ -N trimsMd # job name, anything you want
-#$ -l h_rt=24:00:00
-#$ -M kscavo@bu.edu #your email notification
-#$ -m be
-
-#submit qsub
-qsub trimsMd.qsub
 
 # for reference-based analysis: trimming poor quality bases off ends:
 >trimse2
