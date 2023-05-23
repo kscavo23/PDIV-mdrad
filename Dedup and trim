@@ -18,10 +18,8 @@ trim_mdRAD.pl input=illUN-4-51_S28_L002_R1_001.fastq sampleID=3
 
 
 # for reference-based analysis: trimming poor quality bases off ends:
->trimse
-for file in *.tr0; do
-echo "cutadapt --format fastq -q 15,15 -m 25 -o ${file/.tr0/}.trim $file > ${file}_trimlog.txt" >> trimse;
-done
+>trimse2
+for file in *.tr0; do echo "cutadapt -q 15,15 -m 25 -o ${file/.tr0/}.trim $file > ${file}_trimlog.txt" >> trimse2; done
 
 # execute all commands in trimse file (serial or parallel using Launcher, if your system allows) 
 
