@@ -16,7 +16,6 @@ gunzip illUN-4-51_S28_L002_R1_001.fastq.gz
 trim_mdRAD.pl input=illUN-4-51_S28_L001_R1_001.fastq sampleID=3
 trim_mdRAD.pl input=illUN-4-51_S28_L002_R1_001.fastq sampleID=3
 
-
 # for reference-based analysis: trimming poor quality bases off ends:
 >trimse2
 for file in *.tr0; do echo "cutadapt -q 15,15 -m 25 -o ${file/.tr0/}.trim $file > ${file}_trimlog.txt" >> trimse2; done
@@ -34,7 +33,6 @@ ls -l *.trim | wc -l
 # Build and index your reference 
 # define your ref genome variables in your current directory
 export GENOME_FASTA=pdiv_genome_curated_host_draft.fa
-
 
 # create a qsub to build your reference
 geany buildref_pdiv.qsub
@@ -66,7 +64,9 @@ samtools faidx $GENOME_FASTA
 # map with --local option, enables clipping of mismatching ends (guards against deletions near ends of RAD tags)
 
 GENOME_FASTA=pdiv_genome_curated_host_draft.fa
+
 # mapping with --local option, enables clipping of mismatching ends (guards against deletions near ends of RAD tags)
+# download thed newest version of the 2bRAD_bowtie2_launch.pl script from Matz Zoon github (5/25/23)
 2bRAD_bowtie2_launch.pl '\.trim$' $GENOME_FASTA > maps_pdivgenome
 
 # execute all commands written to maps...
