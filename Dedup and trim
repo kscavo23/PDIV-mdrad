@@ -81,7 +81,7 @@ geany maps_pdivgenome
 #$ -M kscavo@bu.edu #your email notification
 #$ -m be
 
-#also add module load bowtie2 to qsub
+module load bowtie2
 
 #submit maps_pdivgenome as a job
 qsub maps_pdivgenome.qsub
