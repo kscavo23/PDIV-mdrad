@@ -31,3 +31,96 @@ cat *.txt > Merged_trimlog_files.txt
 #check to see of you have the right amount of trim files (should match the number of .tr0 files)
 ls -l *.trim | wc -l
 
+# Build and index your reference 
+# define your ref genome variables in your current directory
+export GENOME_FASTA=pdiv_genome_curated_host_draft.fa
+
+
+# create a qsub to build your reference
+geany buildref_pdiv.qsub
+
+# add this to buildref_pdiv qsub
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd #start job in submission directory
+#$ -N buildref_pdiv # job name, anything you want
+#$ -l h_rt=24:00:00
+#$ -M kscavo@bu.edu
+#$ -m be
+
+module load bowtie2
+
+cd /projectnb/cnidaria/kscavo/mdrad
+
+bowtie2-build $GENOME_FASTA $GENOME_FASTA
+
+# submit job
+qsub buildref_pdiv.qsub
+
+# once it's done, index your reference (quick one - didn't do a job)
+module load samtools
+samtools faidx $GENOME_FASTA
+
+# mapping reads to reference 
+
+# map with --local option, enables clipping of mismatching ends (guards against deletions near ends of RAD tags)
+
+GENOME_FASTA=pdiv_genome_curated_host_draft.fa
+# mapping with --local option, enables clipping of mismatching ends (guards against deletions near ends of RAD tags)
+2bRAD_bowtie2_launch.pl '\.trim$' $GENOME_FASTA > maps_pdivgenome
+
+# execute all commands written to maps...
+geany maps_pdivgenome
+
+# added this text to the top of 'maps' file, and saved as maps.qsub
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd # start job in submission directory
+#$ -N maps_pdivgenome # job name
+#$ -l h_rt=24:00:00
+#$ -M kscavo@bu.edu #your email notification
+#$ -m be
+
+#also add module load bowtie2 to qsub
+
+#submit maps_pdivgenome as a job
+qsub maps_pdivgenome.qsub
+
+#makes .sam files for all your samples
+
+ls *.sam > sams   #makes a text file with all .sam files so that you can count them in next command
+cat sams | wc -l # number should match number of trim files
+
+# next stage is compressing, sorting and indexing the SAM files, so they become BAM files:
+module load samtools
+>s2b
+for file in *.sam; do
+echo "samtools sort -O bam -o ${file/.sam/}.bam $file && samtools index ${file/.sam/}.bam">>s2b;
+done
+
+#This makes a file called "s2b" which has makes a list of commands to execute
+    
+# open s2b file
+geany s2b
+
+# added this text to the top of 's2b' file, and saved as s2b.qsub
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd # start job in submission directory
+#$ -N s2b_pdivgen # job name
+#$ -l h_rt=24:00:00
+#$ -M kscavo@bu.edu #your email notification
+#$ -m be
+
+# also add module load samtools to qsub
+
+# submit s2b.qsub as a job
+qsub s2b.qsub
+
+# makes .bam files for all your samples
+
+# check to see if you have .bam files for all samples
+ls *bam | wc -l  # should be the same number as number of trim files
+
+# BAM files are the input into various genotype calling / popgen programs, this is the main interim result of the analysis. Archive them.
+
