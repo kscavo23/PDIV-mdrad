@@ -16,20 +16,6 @@ gunzip illUN-4-51_S28_L002_R1_001.fastq.gz
 trim_mdRAD.pl input=illUN-4-51_S28_L001_R1_001.fastq sampleID=3
 trim_mdRAD.pl input=illUN-4-51_S28_L002_R1_001.fastq sampleID=3
 
-# for reference-based analysis: trimming poor quality bases off ends:
->trimse2
-for file in *.tr0; do echo "cutadapt -q 15,15 -m 25 -o ${file/.tr0/}.trim $file > ${file}_trimlog.txt" >> trimse2; done
-
-# execute all commands in trimse file (serial or parallel using Launcher, if your system allows) 
-
-#once the job is finished, merge together all log files created from trimming so that they are easier to look at
-cat *.txt > Merged_trimlog_files.txt 
-
-#all trimmed files have ending, .trim
-
-#check to see of you have the right amount of trim files (should match the number of .tr0 files)
-ls -l *.trim | wc -l
-
 # Build and index your reference 
 # define your ref genome variables in your current directory
 export GENOME_FASTA=pdiv_genome_curated_host_draft.fa
@@ -67,7 +53,7 @@ GENOME_FASTA=pdiv_genome_curated_host_draft.fa
 
 # mapping with --local option, enables clipping of mismatching ends (guards against deletions near ends of RAD tags)
 # download thed newest version of the 2bRAD_bowtie2_launch.pl script from Matz Zoon github (5/25/23)
-2bRAD_bowtie2_launch.pl '\.trim$' $GENOME_FASTA > maps_pdivgenome
+2bRAD_bowtie2_launch.pl '\.tr0$' $GENOME_FASTA > maps_pdivgenome
 
 # execute all commands written to maps...
 geany maps_pdivgenome
