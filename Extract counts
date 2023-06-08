@@ -1,7 +1,7 @@
 # extracting methylation counts: collecting reads with identifiable CpG that has been cut my MspJI and writing bismark's cov file for them:
 # must have samtools and bedtools
 
-REF="/path/to/mygenome.fasta"
+REF="/path/to/pdiv_genome_curated_host_draft.fa"
 
 for BAM in `ls *bam`; do
 # forward reads:
