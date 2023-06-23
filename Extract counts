@@ -26,7 +26,94 @@ done
 # MspJI-MseI fragments is being sequenced: 1 (right frag) and 2 (left frag). Value 
 # of 0 means that there are two CpGs (both left and right) that might be responsible.
 
-Christophers Bismark cov files:
-- contain information about the location of each CpG 
-- and the number of reads corresponding to a methylated cytosine (CpG) (unmethylated cytosines are not included)
-- The second column has values identifying which one of the two MspJI-MseI fragments is being sequenced: 1 (right frag) and 2 (left frag)
+# above code from Misha and Christoper
+
+# Now to preparing .cov files for analysis
+# make a data sheet with all CpG sites from each sample (rows) and the number of reads found for each CpG in each sample (samples are in columns), if a CpG was
+  # not present in the sample, then add a 0
+
+# first need to prep .cov files before making a the data sheet
+
+# gunzip all .cov files
+
+# make gunzip bash script
+        #!/bin/bash
+        
+        directory="/projectnb/cnidaria/kscavo/mdrad"  # Set the directory where .cov files are located
+        
+        # Change to the target directory
+        cd "$directory"
+        
+        # Gunzip all .cov files in the directory
+        for file in *.cov.gz; do
+          gunzip "$file"
+        done
+        
+        echo "Gunzip completed!"
+
+# next, delete unnecessary columns and concatenate first two columns for each cov file
+
+for file in *.cov; do
+echo "cut -f 1,2,5 $file | awk '{print $1 "_" $2, $3}' FS=' ' > ${file/.cov/}.cat.cov" >> format_md
+done
+
+# make qsub out of format_md (kind of works but need to fix the print section for some reason??)
+# example of how each line should look 
+# cut -f 1,2,5 2_38_L002_TCAG_M2_298.tr0.bt2.bam.cov | awk '{print $1 "_" $2, $3}' FS=' ' > 2_38_L002_TCAG_M2_298.tr0.bt2.bam.cat.cov
+
+# do you need to turn each one into a tab delimited file? -idk but did it anyways
+for file in *.cov; do
+sed 's/ /\t/g' $file > ${file/.cov/}.cov.txt
+done
+
+# it should be doing this command for each file
+# sed 's/ /\t/g' 2_38_L002_TCAG_M2_298.tr0.bt2.bam.cat.cov > 2_38_L002_TCAG_M2_298.tr0.bt2.bam.cat.txt
+
+# sort each file
+for file in *.cov.txt; do
+sort -k1 $file > ${file/.cov.txt/}.sort.cov
+done
+
+# it should be doing this command for each file
+# sort -k1 2_38_L002_TCAG_M2_298.tr0.bt2.bam.cat.txt > sorted_M2_298.cat.cov.txt
+
+# see how many sorted files you have
+# should be 183
+ls -l *.sort.cov | wc -l
+
+# make a .sh script to make the final data sheet
+
+#use this script- lets call it join_mdrad.sh
+
+          #!/bin/bash
+          
+          output_file="joined_files.txt"
+          tmp_file="tmp_output.txt"
+          directory="$1"  # Set the directory here
+          
+          # Get the first file in the list
+          input_files=($(find "$directory" -type f))
+          shift
+          
+          # Copy the first file to the output file
+          cp "${input_files[0]}" "$output_file"
+          
+          # Iterate over the remaining files
+          for file in "$@"; do
+            # Join the current file with the output file and store the result in a temporary file
+            join -a 1 -a 2 -e 0 -o auto "$output_file" "$file" > "$tmp_file"
+          
+            # Replace the output file with the temporary file
+            mv "$tmp_file" "$output_file"
+          done
+          
+          echo "Joined files successfully!"
+
+# make the script usable
+chmod +x join_mdrad.sh
+
+# run the script like this: 
+#real version
+./join_mdrad.sh /projectnb/cnidaria/kscavo/mdrad/ M1_201.tr0.bt2.bam.cat.sort.cov M1_202.tr0.bt2.bam.cat.sort.cov M1_204.tr0.bt2.bam.cat.sort.cov M1_205.tr0.bt2.bam.cat.sort.cov M1_206.tr0.bt2.bam.cat.sort.cov M1_208.tr0.bt2.bam.cat.sort.cov M1_210.tr0.bt2.bam.cat.sort.cov M1_211.tr0.bt2.bam.cat.sort.cov M1_212.tr0.bt2.bam.cat.sort.cov M1_214.tr0.bt2.bam.cat.sort.cov M1_215.tr0.bt2.bam.cat.sort.cov M1_217.tr0.bt2.bam.cat.sort.cov M1_220.tr0.bt2.bam.cat.sort.cov M1_221.tr0.bt2.bam.cat.sort.cov M1_222.tr0.bt2.bam.cat.sort.cov M1_224.tr0.bt2.bam.cat.sort.cov M1_225.tr0.bt2.bam.cat.sort.cov M1_226.tr0.bt2.bam.cat.sort.cov M1_227.tr0.bt2.bam.cat.sort.cov M1_228.tr0.bt2.bam.cat.sort.cov M1_229.tr0.bt2.bam.cat.sort.cov M1_230.tr0.bt2.bam.cat.sort.cov M1_230_D2.tr0.bt2.bam.cat.sort.cov M1_231.tr0.bt2.bam.cat.sort.cov M1_232.tr0.bt2.bam.cat.sort.cov M1_233.tr0.bt2.bam.cat.sort.cov M1_234.tr0.bt2.bam.cat.sort.cov M1_235.tr0.bt2.bam.cat.sort.cov M1_236.tr0.bt2.bam.cat.sort.cov M1_237.tr0.bt2.bam.cat.sort.cov M1_238.tr0.bt2.bam.cat.sort.cov M1_239.tr0.bt2.bam.cat.sort.cov M1_239_2.tr0.bt2.bam.cat.sort.cov M1_240.tr0.bt2.bam.cat.sort.cov M1_241.tr0.bt2.bam.cat.sort.cov M1_242.tr0.bt2.bam.cat.sort.cov M1_243.tr0.bt2.bam.cat.sort.cov M1_244.tr0.bt2.bam.cat.sort.cov M1_246.tr0.bt2.bam.cat.sort.cov M1_247.tr0.bt2.bam.cat.sort.cov M1_248.tr0.bt2.bam.cat.sort.cov M1_250.tr0.bt2.bam.cat.sort.cov M1_251.tr0.bt2.bam.cat.sort.cov M1_253.tr0.bt2.bam.cat.sort.cov M1_254.tr0.bt2.bam.cat.sort.cov M1_44.tr0.bt2.bam.cat.sort.cov M1_47.tr0.bt2.bam.cat.sort.cov M1_49.tr0.bt2.bam.cat.sort.cov M1_50.tr0.bt2.bam.cat.sort.cov M1_53.tr0.bt2.bam.cat.sort.cov M1_54.tr0.bt2.bam.cat.sort.cov M1_56.tr0.bt2.bam.cat.sort.cov M1_57.tr0.bt2.bam.cat.sort.cov M1_58.tr0.bt2.bam.cat.sort.cov M1_60.tr0.bt2.bam.cat.sort.cov M1_61.tr0.bt2.bam.cat.sort.cov M1_63.tr0.bt2.bam.cat.sort.cov M1_64.tr0.bt2.bam.cat.sort.cov M1_66.tr0.bt2.bam.cat.sort.cov M1_69.tr0.bt2.bam.cat.sort.cov M1_70.tr0.bt2.bam.cat.sort.cov M1_B13.tr0.bt2.bam.cat.sort.cov M1_B15.tr0.bt2.bam.cat.sort.cov M1_B23.tr0.bt2.bam.cat.sort.cov M1_B26.tr0.bt2.bam.cat.sort.cov M1_B81.tr0.bt2.bam.cat.sort.cov M1_B94.tr0.bt2.bam.cat.sort.cov M2_162.tr0.bt2.bam.cat.sort.cov M2_164.tr0.bt2.bam.cat.sort.cov M2_165.tr0.bt2.bam.cat.sort.cov M2_166.tr0.bt2.bam.cat.sort.cov M2_167.tr0.bt2.bam.cat.sort.cov M2_168.tr0.bt2.bam.cat.sort.cov M2_170.tr0.bt2.bam.cat.sort.cov M2_171.tr0.bt2.bam.cat.sort.cov M2_172.tr0.bt2.bam.cat.sort.cov M2_173.tr0.bt2.bam.cat.sort.cov M2_177.tr0.bt2.bam.cat.sort.cov M2_178.tr0.bt2.bam.cat.sort.cov M2_179.tr0.bt2.bam.cat.sort.cov M2_180.tr0.bt2.bam.cat.sort.cov M2_183.tr0.bt2.bam.cat.sort.cov M2_184.tr0.bt2.bam.cat.sort.cov M2_186.tr0.bt2.bam.cat.sort.cov M2_187.tr0.bt2.bam.cat.sort.cov M2_189.tr0.bt2.bam.cat.sort.cov M2_190.tr0.bt2.bam.cat.sort.cov M2_223.tr0.bt2.bam.cat.sort.cov M2_255.tr0.bt2.bam.cat.sort.cov M2_257.tr0.bt2.bam.cat.sort.cov M2_258.tr0.bt2.bam.cat.sort.cov M2_259.tr0.bt2.bam.cat.sort.cov M2_260.tr0.bt2.bam.cat.sort.cov M2_262.tr0.bt2.bam.cat.sort.cov M2_264.tr0.bt2.bam.cat.sort.cov M2_265.tr0.bt2.bam.cat.sort.cov M2_267.tr0.bt2.bam.cat.sort.cov M2_268.tr0.bt2.bam.cat.sort.cov M2_269.tr0.bt2.bam.cat.sort.cov M2_271.tr0.bt2.bam.cat.sort.cov M2_272.tr0.bt2.bam.cat.sort.cov M2_273.tr0.bt2.bam.cat.sort.cov M2_274.tr0.bt2.bam.cat.sort.cov M2_275.tr0.bt2.bam.cat.sort.cov M2_276.tr0.bt2.bam.cat.sort.cov M2_278.tr0.bt2.bam.cat.sort.cov M2_279.tr0.bt2.bam.cat.sort.cov M2_280.tr0.bt2.bam.cat.sort.cov M2_281.tr0.bt2.bam.cat.sort.cov M2_282.tr0.bt2.bam.cat.sort.cov M2_283.tr0.bt2.bam.cat.sort.cov M2_284.tr0.bt2.bam.cat.sort.cov M2_286.tr0.bt2.bam.cat.sort.cov M2_286_2.tr0.bt2.bam.cat.sort.cov M2_287.tr0.bt2.bam.cat.sort.cov M2_288.tr0.bt2.bam.cat.sort.cov M2_289.tr0.bt2.bam.cat.sort.cov M2_290.tr0.bt2.bam.cat.sort.cov M2_291.tr0.bt2.bam.cat.sort.cov M2_292.tr0.bt2.bam.cat.sort.cov M2_293.tr0.bt2.bam.cat.sort.cov M2_294.tr0.bt2.bam.cat.sort.cov M2_295.tr0.bt2.bam.cat.sort.cov M2_296.tr0.bt2.bam.cat.sort.cov M2_298.tr0.bt2.bam.cat.sort.cov M2_299.tr0.bt2.bam.cat.sort.cov M2_67.tr0.bt2.bam.cat.sort.cov R_B14.tr0.bt2.bam.cat.sort.cov R_B16.tr0.bt2.bam.cat.sort.cov R_B17.tr0.bt2.bam.cat.sort.cov R_B18.tr0.bt2.bam.cat.sort.cov R_B30.tr0.bt2.bam.cat.sort.cov R_B31.tr0.bt2.bam.cat.sort.cov R_B33.tr0.bt2.bam.cat.sort.cov R_B34.tr0.bt2.bam.cat.sort.cov R_B36.tr0.bt2.bam.cat.sort.cov R_B38.tr0.bt2.bam.cat.sort.cov R_B40.tr0.bt2.bam.cat.sort.cov R_B42.tr0.bt2.bam.cat.sort.cov R_B46.tr0.bt2.bam.cat.sort.cov R_B47.tr0.bt2.bam.cat.sort.cov R_B48.tr0.bt2.bam.cat.sort.cov R_B49.tr0.bt2.bam.cat.sort.cov R_B50.tr0.bt2.bam.cat.sort.cov R_B51.tr0.bt2.bam.cat.sort.cov R_B52.tr0.bt2.bam.cat.sort.cov R_B53.tr0.bt2.bam.cat.sort.cov R_B54.tr0.bt2.bam.cat.sort.cov R_B55.tr0.bt2.bam.cat.sort.cov R_B56.tr0.bt2.bam.cat.sort.cov R_B58.tr0.bt2.bam.cat.sort.cov R_B59.tr0.bt2.bam.cat.sort.cov R_B60.tr0.bt2.bam.cat.sort.cov R_B61.tr0.bt2.bam.cat.sort.cov R_B64.tr0.bt2.bam.cat.sort.cov R_B7.tr0.bt2.bam.cat.sort.cov R_B72.tr0.bt2.bam.cat.sort.cov R_B73.tr0.bt2.bam.cat.sort.cov R_B75.tr0.bt2.bam.cat.sort.cov R_B76.tr0.bt2.bam.cat.sort.cov R_B79.tr0.bt2.bam.cat.sort.cov R_B8.tr0.bt2.bam.cat.sort.cov R_B83.tr0.bt2.bam.cat.sort.cov R_B84.tr0.bt2.bam.cat.sort.cov R_B85.tr0.bt2.bam.cat.sort.cov R_B87.tr0.bt2.bam.cat.sort.cov R_B9.tr0.bt2.bam.cat.sort.cov R_B90.tr0.bt2.bam.cat.sort.cov R_B91.tr0.bt2.bam.cat.sort.cov R_B97.tr0.bt2.bam.cat.sort.cov R_B98.tr0.bt2.bam.cat.sort.cov R_B99.tr0.bt2.bam.cat.sort.cov R_Y712.tr0.bt2.bam.cat.sort.cov R_Y713.tr0.bt2.bam.cat.sort.cov R_Y715.tr0.bt2.bam.cat.sort.cov R_Y716.tr0.bt2.bam.cat.sort.cov R_Y744.tr0.bt2.bam.cat.sort.cov R_Y746.tr0.bt2.bam.cat.sort.cov R_Y748.tr0.bt2.bam.cat.sort.cov R_Y781.tr0.bt2.bam.cat.sort.cov R_Y783.tr0.bt2.bam.cat.sort.cov R_Y785.tr0.bt2.bam.cat.sort.cov M1_207.tr0.bt2.bam.cat.sort.cov
+
+
