@@ -27,3 +27,8 @@ bedtools makewindows -g chrLengths.txt -w 500 | awk 'BEGIN{OFS="\t"}{print $0,$1
 
 #1Kb windows around genes
 windows_around_genes_from_gff.R --i $GFF --o 1kb_around_genes.bed
+
+add "" around gene#
+sed -E 's/(gene_id g([0-9]+))/gene_id "\2"/g' pdiv_augustus_new_3.gtf > output_file.txt
+
+#modify file in excel - add transect_id " "; before gene_id "gX" otherwise bedops cannot read the file (use concatenate), also remove gene_id "xxx" from first column because the script adds it there, just copy and paste the column from pdiv_augustus_new_2.gtf 
