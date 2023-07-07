@@ -8,7 +8,22 @@ grep -E 'gene_id "[^"]+"' pdiv.augustus.new.gtf > pdiv.augustus.new.mod.gtf
 gtf2bed < output_file.gtf > pdiv_gtf.bed
 
 #run bedtools
-module load bedtools
-echo "bedtools multicov -bams *.bam -bed pdiv_gtf.bed > mr_gene_counts.tsv0" > runBedtools.qsub
+#listing all bam filenames 
+ls *bam >bams
 
-#run as a qsub
+#make qsub  called "runBedtools.qsub" which has:
+module load bedtools
+bedtools multicov -bams bams -bed pdiv_gtf.bed > mr_gene_counts.tsv0
+
+#generate 1Kb windows
+module load bedtools
+fasta_sequence_characters.py -fa $GENOME > chrLengths.txt
+bedtools makewindows -g chrLengths.txt -w 1000 | awk 'BEGIN{OFS="\t"}{print $0,$1"-"$2"-"$3}' > windowBoundaries_1kb.bed
+
+#generate 500 bp windows
+module load bedtools
+fasta_sequence_characters.py -fa $GENOME > chrLengths.txt
+bedtools makewindows -g chrLengths.txt -w 500 | awk 'BEGIN{OFS="\t"}{print $0,$1"-"$2"-"$3}' > windowBoundaries_500bp.bed
+
+#1Kb windows around genes
+windows_around_genes_from_gff.R --i $GFF --o 1kb_around_genes.bed
