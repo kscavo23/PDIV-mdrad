@@ -77,6 +77,31 @@ qsub maps_pdivgenome.qsub
 ls *.sam > sams   #makes a text file with all .sam files so that you can count them in next command
 cat sams | wc -l # number should match number of trim files
 
+
+# Filtering the sam files to grab high quality reads
+>filter_sam
+for file in *.sam; do
+echo "samtools view -Sq 30 $file > ${file/.sam/}_filter.sam">>filter_sam;
+done
+#make into a qsub and run
+
+# need to reattach the header
+# run this on the original sam files (not filtered files) to extract the header
+>header_sam
+for file in *.sam; do
+echo "samtools view -H $file > ${file/.sam/}_header.sam">>header_sam;
+done
+#make into a qsub and run
+
+# now concatenate the filtered sam file and the header file
+>filthead_sam
+for file in *filter.sam; do
+echo "cat ${file/.sam/}_header.sam $file > ${file/.sam/}_filtheader.sam">>filthead_sam;
+done
+
+# need to change the file names manually though
+# make into a qsub and run
+
 # next stage is compressing, sorting and indexing the SAM files, so they become BAM files:
 module load samtools
 >s2b
@@ -109,3 +134,4 @@ qsub s2b.qsub
 ls *bam | wc -l  # should be the same number as number of trim files
 
 # BAM files are the input into various genotype calling / popgen programs, this is the main interim result of the analysis. Archive them.
+
