@@ -20,3 +20,15 @@ add "" around gene#
 sed -E 's/(gene_id g([0-9]+))/gene_id "\2"/g' pdiv_augustus_new_3.gtf > output_file.txt
 
 #modify file in excel - add transect_id " "; before gene_id "gX" otherwise bedops cannot read the file (use concatenate), also remove gene_id "xxx" from first column because the script adds it there, just copy and paste the column from pdiv_augustus_new_2.gtf 
+
+
+######################################
+############# GET COUNTS #############
+######################################
+
+MY_GFF="pdiv2_gtf.bed"; GENE_ID="gene_id"
+
+#choose the genome you're working with
+
+#run featurecounts
+echo "featureCounts -a $MY_GFF -t gene -g $GENE_ID -o feature_counts_out.tsv -T 48 --primary *.bam" > runFeatureCounts
