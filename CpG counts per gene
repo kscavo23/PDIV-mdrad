@@ -1,8 +1,6 @@
-#------- MAKING WINDOWS:
-
 
 GENOME="pdiv_genome_curated_host_draft.fa"
-#generate gene windows
+
 grep -v '^#' pdiv.augustus.gff > pdiv.augustus.new.gtf
 grep -E 'gene_id "[^"]+"' pdiv.augustus.new.gtf > pdiv.augustus.new.mod.gtf
 gtf2bed < output_file.gtf > pdiv_gtf.bed
